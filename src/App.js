@@ -1,25 +1,27 @@
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Home from "./features/acme/components/home";
+import CadastroContatos from "./features/acme/components/cadastroContatos";
+import CadastroFornecedores from "./features/acme/components/cadastroFornecedores"; // Corrigido
+import Menu from "./features/acme/components/menu";
+import ConsultaCotacoes from "./features/acme/components/consultaCotacoes";
+import CadastroProdutos from "./features/acme/components/cadastroProdutos"; // Corrigido
+import CadastroCotacoes from "./features/acme/components/CadastroCotacoes"; // Corrigido
 
-function App() {
+const App = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <Menu />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/fornecedores" element={<CadastroFornecedores />} />
+        <Route path="/contatos" element={<CadastroContatos />} />
+        <Route path="/produtos" element={<CadastroProdutos />} />
+        <Route path="/cotacoes" element={<CadastroCotacoes />} />
+        <Route path="/consultar-cotacoes" element={<ConsultaCotacoes />} />
+      </Routes>
+    </Router>
   );
-}
+};
 
 export default App;
