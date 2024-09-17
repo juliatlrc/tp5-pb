@@ -1,0 +1,42 @@
+name: CI Pipeline
+
+# Configura em quais eventos o workflow será executado
+on:
+  push:
+    branches:
+      - main # Executa em push na branch main
+      - master # Executa em push na branch master
+      - feature/develop # Executa em push na branch feature/develop
+  pull_request:
+    branches:
+      - main # Executa em pull request na branch main
+      - master # Executa em pull request na branch master
+      - feature/develop # Executa em pull request na branch feature/develop
+
+# Jobs que serão executados
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Passo 1: Check-out do código
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      # Passo 2: Configuração do Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "16"
+
+      # Passo 3: Instalação das dependências do projeto
+      - name: Install dependencies
+        run: npm install
+
+      # Passo 4: Executa os testes
+      - name: Run tests
+        run: npm test
+
+      # Passo 5: Gera o build (se aplicável)
+      - name: Build project
+        run: npm run build
