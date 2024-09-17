@@ -1,0 +1,49 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - feature/develop
+  pull_request:
+    branches:
+      - main
+      - master
+      - feature/develop
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Passo 1: Check-out do código
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      # Passo 2: Configuração do Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "16"
+
+      # Passo 3: Cache das dependências do node_modules
+      - name: Cache node modules
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      # Passo 4: Instalação das dependências do projeto
+      - name: Install dependencies
+        run: npm install
+
+      # Passo 5: Executa os testes
+      - name: Run tests
+        run: npm test
+
+      # Passo 6: Gera o build (se aplicável)
+      - name: Build project
+        run: npm run build
