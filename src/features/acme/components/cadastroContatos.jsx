@@ -9,6 +9,8 @@ import {
 } from "@mui/material";
 import ContactMailIcon from "@mui/icons-material/ContactMail";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { collection, addDoc } from "firebase/firestore/lite"; // Importar Firestore
+import { db } from "../../firebase/config"; // Certifique-se de que o caminho está correto
 
 // Tema personalizado
 const acmeTheme = createTheme({
@@ -38,15 +40,30 @@ const CadastroContatos = () => {
   });
 
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSuccess(true);
+    try {
+      // Adicionar o contato ao Firestore
+      await addDoc(collection(db, "contatos"), {
+        nomeContato: form.nomeContato,
+        fornecedor: form.fornecedor,
+        telefone: form.telefone,
+        email: form.email,
+      });
+      setSuccess(true);
+      setError(false);
+      setForm({ nomeContato: "", fornecedor: "", telefone: "", email: "" }); // Limpa o formulário após o sucesso
+    } catch (error) {
+      console.error("Erro ao cadastrar contato: ", error);
+      setError(true);
+    }
   };
 
   return (
@@ -68,6 +85,7 @@ const CadastroContatos = () => {
         {success && (
           <Alert severity="success">Contato cadastrado com sucesso!</Alert>
         )}
+        {error && <Alert severity="error">Erro ao cadastrar contato!</Alert>}
 
         <form onSubmit={handleSubmit}>
           <TextField

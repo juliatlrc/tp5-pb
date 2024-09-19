@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   TextField,
   Button,
@@ -9,6 +9,8 @@ import {
   MenuItem,
 } from "@mui/material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { collection, getDocs, addDoc } from "firebase/firestore/lite"; // Importações Firestore
+import { db } from "../../firebase/config"; // Certifique-se de que o caminho está correto
 
 const acmeTheme = createTheme({
   palette: {
@@ -27,17 +29,6 @@ const acmeTheme = createTheme({
   },
 });
 
-// Exemplo de dados para produtos e contatos (você pode substituir por uma API real)
-const produtosDisponiveis = [
-  { id: 1, nome: "Produto 1" },
-  { id: 2, nome: "Produto 2" },
-];
-
-const contatosDisponiveis = [
-  { id: 1, nome: "Contato 1" },
-  { id: 2, nome: "Contato 2" },
-];
-
 const CadastroCotacoes = () => {
   const [form, setForm] = useState({
     nomeEmpresa: "",
@@ -47,25 +38,84 @@ const CadastroCotacoes = () => {
     contato: "",
   });
 
+  const [produtosDisponiveis, setProdutosDisponiveis] = useState([]);
+  const [contatosDisponiveis, setContatosDisponiveis] = useState([]);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState(false);
+
+  // Função para buscar produtos do Firestore
+  const fetchProdutos = async () => {
+    const produtosCollection = collection(db, "produtos");
+    const produtosSnapshot = await getDocs(produtosCollection);
+    const produtosList = produtosSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    setProdutosDisponiveis(produtosList);
+  };
+
+  // Função para buscar contatos/fornecedores do Firestore
+  const fetchContatos = async () => {
+    const contatosCollection = collection(db, "contatos");
+    const contatosSnapshot = await getDocs(contatosCollection);
+    const contatosList = contatosSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    setContatosDisponiveis(contatosList);
+  };
+
+  useEffect(() => {
+    fetchProdutos();
+    fetchContatos();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
+
+    // Manter o estado do contato e nomeFuncionario ao selecionar nomeEmpresa
+    if (name === "nomeEmpresa") {
+      const fornecedorSelecionado = contatosDisponiveis.find(
+        (contato) => contato.fornecedor === value
+      );
+      if (fornecedorSelecionado) {
+        setForm({
+          ...form,
+          nomeEmpresa: fornecedorSelecionado.fornecedor,
+          contato: fornecedorSelecionado.email, // Preencher o contato com o email
+          nomeFuncionario: fornecedorSelecionado.nomeContato, // Preencher nome do funcionário
+        });
+      }
+    } else {
+      setForm({ ...form, [name]: value });
+    }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Lógica para salvar os dados pode ser adicionada aqui (API, etc.)
-    console.log(form);
-    setSuccess(true);
-    setForm({
-      nomeEmpresa: "",
-      nomeFuncionario: "",
-      preco: "",
-      produto: "",
-      contato: "",
-    });
+    try {
+      // Adicionar a cotação no Firestore
+      await addDoc(collection(db, "cotacoes"), {
+        nomeEmpresa: form.nomeEmpresa,
+        nomeFuncionario: form.nomeFuncionario,
+        preco: form.preco,
+        produto: form.produto,
+        contato: form.contato,
+      });
+      setSuccess(true);
+      setError(false);
+      // Limpar o formulário após o envio
+      setForm({
+        nomeEmpresa: "",
+        nomeFuncionario: "",
+        preco: "",
+        produto: "",
+        contato: "",
+      });
+    } catch (error) {
+      console.error("Erro ao enviar cotação: ", error);
+      setError(true);
+    }
   };
 
   return (
@@ -81,17 +131,31 @@ const CadastroCotacoes = () => {
         {success && (
           <Alert severity="success">Cotação cadastrada com sucesso!</Alert>
         )}
+        {error && (
+          <Alert severity="error">
+            Erro ao cadastrar cotação. Tente novamente!
+          </Alert>
+        )}
 
         <form onSubmit={handleSubmit}>
           <TextField
-            label="Nome da Empresa"
+            select
+            label="Fornecedor (Nome da Empresa)"
             name="nomeEmpresa"
             value={form.nomeEmpresa}
             onChange={handleChange}
             fullWidth
             required
             margin="normal"
-          />
+          >
+            {contatosDisponiveis
+              .filter((contato) => contato.fornecedor) // Filtra apenas contatos que têm fornecedor
+              .map((contato) => (
+                <MenuItem key={contato.id} value={contato.fornecedor}>
+                  {contato.fornecedor}
+                </MenuItem>
+              ))}
+          </TextField>
 
           <TextField
             label="Nome do Funcionário"
@@ -101,6 +165,7 @@ const CadastroCotacoes = () => {
             fullWidth
             required
             margin="normal"
+            disabled // Desabilitado, pois será preenchido automaticamente
           />
 
           <TextField
@@ -125,28 +190,22 @@ const CadastroCotacoes = () => {
             margin="normal"
           >
             {produtosDisponiveis.map((produto) => (
-              <MenuItem key={produto.id} value={produto.nome}>
-                {produto.nome}
+              <MenuItem key={produto.id} value={produto.nomeProduto}>
+                {produto.nomeProduto}
               </MenuItem>
             ))}
           </TextField>
 
           <TextField
-            select
-            label="Contato"
+            label="Contato (Email)"
             name="contato"
             value={form.contato}
             onChange={handleChange}
             fullWidth
             required
             margin="normal"
-          >
-            {contatosDisponiveis.map((contato) => (
-              <MenuItem key={contato.id} value={contato.nome}>
-                {contato.nome}
-              </MenuItem>
-            ))}
-          </TextField>
+            disabled // Desabilitado, pois será preenchido automaticamente com o email do fornecedor
+          />
 
           <Button
             type="submit"

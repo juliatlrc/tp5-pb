@@ -8,6 +8,9 @@ import {
   Alert,
 } from "@mui/material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { db } from "../../firebase/config";
+import { collection } from "firebase/firestore/lite";
+import { addDoc } from "firebase/firestore/lite";
 
 const acmeTheme = createTheme({
   palette: {
@@ -32,15 +35,27 @@ const CadastroProdutos = () => {
     descricao: "",
   });
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    setSuccess(true);
+    try {
+      await addDoc(collection(db, "produtos"), {
+        nomeProduto: form.nomeProduto,
+        descricao: form.descricao,
+      });
+      setSuccess(true);
+      setError(false);
+      setForm({ nomeProduto: "", descricao: "" }); // Resetar o formulário
+    } catch (error) {
+      console.error("Erro ao adicionar o produto: ", error);
+      setError(true);
+    }
   };
 
   return (
@@ -56,6 +71,7 @@ const CadastroProdutos = () => {
         {success && (
           <Alert severity="success">Produto cadastrado com sucesso!</Alert>
         )}
+        {error && <Alert severity="error">Erro ao cadastrar o produto!</Alert>}
 
         <form onSubmit={handleSubmit}>
           <TextField

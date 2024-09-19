@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   TextField,
   Container,
@@ -8,8 +8,11 @@ import {
   List,
   ListItem,
   ListItemText,
+  MenuItem,
 } from "@mui/material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { collection, getDocs } from "firebase/firestore/lite";
+import { db } from "../../firebase/config"; // Importa o Firestore
 
 const acmeTheme = createTheme({
   palette: {
@@ -28,21 +31,32 @@ const acmeTheme = createTheme({
   },
 });
 
-// Exemplo de dados de cotações e produtos (substitua por dados reais de uma API)
+// Exemplo de dados de cotações (substitua por dados reais)
 const cotacoes = [
   { produtoId: 1, dataCotacao: "2024-01-10", preco: 150.0 },
   { produtoId: 1, dataCotacao: "2024-02-15", preco: 155.0 },
   { produtoId: 2, dataCotacao: "2024-01-20", preco: 200.0 },
 ];
 
-const produtosDisponiveis = [
-  { id: 1, nome: "Produto 1" },
-  { id: 2, nome: "Produto 2" },
-];
-
 const ConsultaCotacoes = () => {
   const [produtoId, setProdutoId] = useState("");
   const [cotacoesFiltradas, setCotacoesFiltradas] = useState([]);
+  const [produtos, setProdutos] = useState([]);
+
+  // Função para buscar os produtos cadastrados no Firebase
+  const fetchProdutos = async () => {
+    const produtosCollection = collection(db, "produtos"); // Referencia a coleção de produtos no Firestore
+    const produtosSnapshot = await getDocs(produtosCollection);
+    const produtosList = produtosSnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    setProdutos(produtosList); // Atualiza o estado com a lista de produtos
+  };
+
+  useEffect(() => {
+    fetchProdutos(); // Busca os produtos quando o componente é carregado
+  }, []);
 
   const handleChange = (e) => {
     setProdutoId(e.target.value);
@@ -74,10 +88,11 @@ const ConsultaCotacoes = () => {
           required
           margin="normal"
         >
-          {produtosDisponiveis.map((produto) => (
-            <option key={produto.id} value={produto.id}>
-              {produto.nome}
-            </option>
+          {produtos.map((produto) => (
+            <MenuItem key={produto.id} value={produto.id}>
+              {produto.nomeProduto}{" "}
+              {/* Use o campo do produto cadastrado no Firebase */}
+            </MenuItem>
           ))}
         </TextField>
 
