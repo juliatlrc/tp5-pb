@@ -9,8 +9,7 @@ import {
 } from "@mui/material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { db } from "../../firebase/config";
-import { collection } from "firebase/firestore/lite";
-import { addDoc } from "firebase/firestore/lite";
+import { collection, addDoc } from "firebase/firestore"; // Firestore completo
 
 const acmeTheme = createTheme({
   palette: {

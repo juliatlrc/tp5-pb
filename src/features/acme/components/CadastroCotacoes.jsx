@@ -9,7 +9,7 @@ import {
   MenuItem,
 } from "@mui/material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { collection, getDocs, addDoc } from "firebase/firestore/lite"; // Importações Firestore
+import { collection, getDocs, addDoc } from "firebase/firestore"; // Importações Firestore
 import { db } from "../../firebase/config"; // Certifique-se de que o caminho está correto
 
 const acmeTheme = createTheme({

@@ -11,7 +11,7 @@ import {
   MenuItem,
 } from "@mui/material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { collection, getDocs } from "firebase/firestore/lite";
+import { collection, query, where, getDocs } from "firebase/firestore"; // Importa o Firestore completo
 import { db } from "../../firebase/config"; // Importa o Firestore
 
 const acmeTheme = createTheme({
@@ -31,15 +31,8 @@ const acmeTheme = createTheme({
   },
 });
 
-// Exemplo de dados de cotações (substitua por dados reais)
-const cotacoes = [
-  { produtoId: 1, dataCotacao: "2024-01-10", preco: 150.0 },
-  { produtoId: 1, dataCotacao: "2024-02-15", preco: 155.0 },
-  { produtoId: 2, dataCotacao: "2024-01-20", preco: 200.0 },
-];
-
 const ConsultaCotacoes = () => {
-  const [produtoId, setProdutoId] = useState("");
+  const [produto, setProduto] = useState("");
   const [cotacoesFiltradas, setCotacoesFiltradas] = useState([]);
   const [produtos, setProdutos] = useState([]);
 
@@ -54,19 +47,30 @@ const ConsultaCotacoes = () => {
     setProdutos(produtosList); // Atualiza o estado com a lista de produtos
   };
 
+  // Função para buscar as cotações do produto selecionado no Firestore
+  const fetchCotacoes = async () => {
+    if (produto) {
+      const cotacoesCollection = collection(db, "cotacoes"); // Referencia a coleção de cotações no Firestore
+      const q = query(cotacoesCollection, where("produto", "==", produto)); // Usa o campo produto como filtro
+      const cotacoesSnapshot = await getDocs(q);
+      const cotacoesList = cotacoesSnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setCotacoesFiltradas(cotacoesList); // Atualiza o estado com a lista de cotações filtradas
+    }
+  };
+
   useEffect(() => {
     fetchProdutos(); // Busca os produtos quando o componente é carregado
   }, []);
 
   const handleChange = (e) => {
-    setProdutoId(e.target.value);
+    setProduto(e.target.value); // Atualiza o estado com o valor do produto selecionado
   };
 
   const handleConsulta = () => {
-    const resultado = cotacoes.filter(
-      (cotacao) => cotacao.produtoId === parseInt(produtoId)
-    );
-    setCotacoesFiltradas(resultado);
+    fetchCotacoes(); // Faz a consulta ao Firestore quando o usuário clica em consultar
   };
 
   return (
@@ -82,16 +86,15 @@ const ConsultaCotacoes = () => {
         <TextField
           select
           label="Produto"
-          value={produtoId}
+          value={produto}
           onChange={handleChange}
           fullWidth
           required
           margin="normal"
         >
           {produtos.map((produto) => (
-            <MenuItem key={produto.id} value={produto.id}>
-              {produto.nomeProduto}{" "}
-              {/* Use o campo do produto cadastrado no Firebase */}
+            <MenuItem key={produto.id} value={produto.nomeProduto}>
+              {produto.nomeProduto}
             </MenuItem>
           ))}
         </TextField>
@@ -116,9 +119,8 @@ const ConsultaCotacoes = () => {
               cotacoesFiltradas.map((cotacao, index) => (
                 <ListItem key={index}>
                   <ListItemText
-                    primary={`Data: ${
-                      cotacao.dataCotacao
-                    } - Preço: R$ ${cotacao.preco.toFixed(2)}`}
+                    primary={`Contato: ${cotacao.contato} | Empresa: ${cotacao.nomeEmpresa}`}
+                    secondary={`Data: ${cotacao.dataCotacao} | Preço: R$ ${cotacao.preco}`}
                   />
                 </ListItem>
               ))

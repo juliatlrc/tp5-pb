@@ -1,11 +1,9 @@
-// Import the functions you need from the SDKs you need
+// firebase/config.js
+// Use a versão completa do Firestore
 import { initializeApp } from "firebase/app";
-import { collection, addDoc } from "firebase/firestore";
-import { getFirestore } from "firebase/firestore/lite"; // Use /lite para Firestore
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+import { getFirestore } from "firebase/firestore"; // Firestore completo, não 'lite'
 
-// Your web app's Firebase configuration
+// Sua configuração do Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyD80gBKygdssNDjBCqLSHJX0_mrjbU1cNU",
   authDomain: "projeto-de-bloco-d5b52.firebaseapp.com",
@@ -15,9 +13,10 @@ const firebaseConfig = {
   appId: "1:442698868499:web:d87c762f1b16ef517e5ce6",
 };
 
-// Initialize Firebase
+// Inicializa o Firebase
 const app = initializeApp(firebaseConfig);
 
+// Inicializa o Firestore
 const db = getFirestore(app);
 
 export { db };
