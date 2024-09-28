@@ -6,9 +6,12 @@ export default [
   {
     files: ["**/*.{js,mjs,cjs,jsx}"],
     languageOptions: {
-      globals: globals.browser, // Definindo o ambiente como 'browser'
+      globals: {
+        ...globals.browser,
+        ...globals.jest, // Adiciona as variáveis globais do Jest
+      },
     },
   },
-  pluginJs.configs.recommended, // Configuração recomendada do ESLint para JavaScript
-  pluginReact.configs.flat.recommended, // Configuração recomendada do ESLint para React
+  pluginJs.configs.recommended,
+  pluginReact.configs.flat.recommended,
 ];
