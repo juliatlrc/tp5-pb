@@ -1,70 +1,187 @@
-# Getting Started with Create React App
+# ACME System
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## Descrição do Projeto
 
-## Available Scripts
+O **ACME System** é uma aplicação web desenvolvida para gerenciar requisições de compra e cotações de produtos. O sistema é dividido em duas funcionalidades principais, direcionadas para dois tipos de usuários: **Colaboradores** e **Administradores**.
 
-In the project directory, you can run:
+- **Colaboradores** podem criar e listar requisições de compra.
+- **Administradores** têm uma visão geral de todas as requisições, podem gerenciar o status das requisições, visualizar cotações para diferentes produtos e empresas, além de cadastrar fornecedores, produtos e colaboradores.
 
-### `npm start`
+O sistema foi construído com foco em acessibilidade, usando um design intuitivo e amigável, com autenticação baseada em **Firebase Authentication** e persistência de dados no **Firebase Firestore**.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+---
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## Funcionalidades
 
-### `npm test`
+### Para Colaboradores:
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- **Cadastro de Requisições**: Colaboradores podem cadastrar novas requisições de compra, preenchendo informações sobre o produto, marca, quantidade, entre outros.
+- **Listagem de Requisições**: Colaboradores podem listar suas próprias requisições e verificar o status atualizado de cada uma delas.
 
-### `npm run build`
+### Para Administradores:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- **Gerenciamento de Requisições**: Administradores podem visualizar todas as requisições feitas, atualizar seus status (A Esperar, Em Cotação, Cotado), além de excluir requisições.
+- **Consulta de Cotações**: Administradores podem selecionar um produto e visualizar as cotações de diferentes fornecedores através de gráficos.
+- **Cadastro de Produtos, Fornecedores e Contatos**: Administradores podem cadastrar novos produtos, fornecedores e contatos no sistema.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+---
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Tecnologias Utilizadas
 
-### `npm run eject`
+### Frontend
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+- **ReactJS**: Framework JavaScript utilizado para construir a interface de usuário de maneira reativa e modular.
+- **Material-UI (MUI)**: Biblioteca de componentes React para implementar rapidamente componentes estilizados e responsivos.
+- **React Router DOM**: Para gerenciamento de rotas e navegação entre diferentes páginas da aplicação.
+- **Chart.js**: Biblioteca de gráficos usada para visualização de dados, como exibição de cotações de produtos por empresa.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### Backend (Firebase)
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+- **Firebase Authentication**: Para autenticação de usuários com login e controle de permissões baseado em roles (colaborador e admin).
+- **Firebase Firestore**: Banco de dados NoSQL em tempo real, utilizado para armazenar informações sobre colaboradores, requisições, produtos, cotações, entre outros.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### Ferramentas e Conceitos Adicionais
 
-## Learn More
+- **React Hooks**: Utilizados para gerenciar o estado e efeitos colaterais no React, como `useState` e `useEffect`.
+- **Firebase SDK**: Conjunto de bibliotecas fornecidas pelo Firebase para autenticação, banco de dados e funções utilitárias.
+- **Modularização de Componentes**: Cada parte da aplicação foi separada em componentes reutilizáveis e de fácil manutenção.
+- **Controle de Roles**: Controle de acesso baseado em funções. Apenas usuários com a role `admin` podem acessar determinadas funcionalidades, como gerenciamento de cotações e requisições.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+---
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+## Estrutura de Pastas
 
-### Code Splitting
+```bash
+├── src
+│   ├── assets
+│   ├── components
+│   │   ├── Colaborador
+│   │   │   ├── NovaRequisicaoCompra.js
+│   │   │   ├── ListarRequisicoes.js
+│   │   ├── Admin
+│   │   │   ├── CadastroCotacoes.js
+│   │   │   ├── ListarRequisicoesAdmin.js
+│   │   │   ├── VisualizarCotacoes.js
+│   │   ├── Menu.js
+│   ├── config
+│   │   ├── firebase.js
+│   ├── App.js
+│   ├── index.js
+│   └── README.md
+```
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+### Principais Componentes
 
-### Analyzing the Bundle Size
+- **Menu.js**: Componente de navegação que exibe diferentes opções de menu com base no papel do usuário (Admin ou Colaborador).
+- **NovaRequisicaoCompra.js**: Formulário para colaboradores criarem novas requisições de compra.
+- **ListarRequisicoes.js**: Exibe todas as requisições feitas por um colaborador, com detalhes e status.
+- **ListarRequisicoesAdmin.js**: Lista as requisições para administradores, com opções de alterar o status e excluir.
+- **VisualizarCotacoes.js**: Mostra gráficos comparativos das cotações de produtos entre diferentes fornecedores.
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+---
 
-### Making a Progressive Web App
+### Configuração do Projeto
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+#### Pré-requisitos
 
-### Advanced Configuration
+- **Node.js** (versão 14.x ou superior)
+- **Firebase CLI** (opcional para gerenciamento do Firebase via terminal)
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+### Configuração do Projeto
 
-### Deployment
+#### Pré-requisitos
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+- **Node.js** (versão 14.x ou superior)
+- **Firebase CLI** (opcional para gerenciamento do Firebase via terminal)
 
-### `npm run build` fails to minify
+#### Instalação
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+1. Clone o repositório:
+
+   ```bash
+   git clone https://github.com/seu-usuario/acme-system.git
+   ```
+
+2. Navegue até o diretório do projeto:
+
+   ```bash
+   cd acme-system
+   ```
+
+3. Instale as dependências:
+
+   ```bash
+   npm install
+   ```
+
+4. Configure o Firebase:
+
+   - Crie um projeto no [Firebase](https://firebase.google.com/).
+   - Habilite **Firestore** e **Firebase Authentication** no console do Firebase.
+   - Obtenha as credenciais de configuração do Firebase e substitua no arquivo `firebase/config.js`.
+
+5. Execute o projeto localmente:
+
+   ```bash
+   npm start
+   ```
+
+## CI Pipeline
+
+Este projeto também inclui uma pipeline de CI que é executada automaticamente no GitHub Actions sempre que há um push ou pull request para as branches `main`, `master` ou `feature/develop`.
+
+### Arquivo de Configuração da Pipeline
+
+```yaml
+name: CI Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - master
+      - feature/develop
+  pull_request:
+    branches:
+      - main
+      - master
+      - feature/develop
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Passo 1: Check-out do código
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      # Passo 2: Configuração do Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "16"
+
+      # Passo 3: Cache das dependências do node_modules
+      - name: Cache node modules
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      # Passo 4: Instalação das dependências do projeto
+      - name: Install dependencies
+        run: npm install
+
+      # Passo 5: Executa os testes
+      - name: Run tests
+        run: npm test
+
+      # Passo 6: Gera o build (se aplicável)
+      - name: Build project
+        run: npm run build
+```
+
+O projeto estará rodando em [http://localhost:3000](http://localhost:3000).

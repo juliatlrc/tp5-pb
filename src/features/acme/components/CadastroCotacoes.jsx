@@ -9,7 +9,8 @@ import {
   MenuItem,
 } from "@mui/material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import { collection, getDocs, addDoc } from "firebase/firestore"; // Importações Firestore
+import { collection, getDocs, addDoc, doc, getDoc } from "firebase/firestore"; // Importações Firestore
+import { useParams } from "react-router-dom"; // Para capturar o ID da requisição
 import { db } from "../../firebase/config"; // Certifique-se de que o caminho está correto
 
 const acmeTheme = createTheme({
@@ -30,6 +31,7 @@ const acmeTheme = createTheme({
 });
 
 const CadastroCotacoes = () => {
+  const { id } = useParams(); // Captura o ID da requisição da URL
   const [form, setForm] = useState({
     nomeEmpresa: "",
     nomeFuncionario: "",
@@ -43,18 +45,28 @@ const CadastroCotacoes = () => {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(false);
 
-  // Função para buscar produtos do Firestore
-  const fetchProdutos = async () => {
-    const produtosCollection = collection(db, "produtos");
-    const produtosSnapshot = await getDocs(produtosCollection);
-    const produtosList = produtosSnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-    setProdutosDisponiveis(produtosList);
+  // Função para buscar a requisição específica pelo ID
+  const fetchRequisicao = async () => {
+    try {
+      const docRef = doc(db, "requisicoes", id); // Busca a requisição pelo ID da URL
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        // Preenche o produto com base na requisição
+        setForm((prevForm) => ({
+          ...prevForm,
+          produto: docSnap.data().nomeProduto,
+        }));
+      } else {
+        console.error("Requisição não encontrada");
+        setError(true);
+      }
+    } catch (error) {
+      console.error("Erro ao buscar requisição: ", error);
+      setError(true);
+    }
   };
 
-  // Função para buscar contatos/fornecedores do Firestore
+  // Função para buscar fornecedores do Firestore
   const fetchContatos = async () => {
     const contatosCollection = collection(db, "contatos");
     const contatosSnapshot = await getDocs(contatosCollection);
@@ -66,9 +78,11 @@ const CadastroCotacoes = () => {
   };
 
   useEffect(() => {
-    fetchProdutos();
     fetchContatos();
-  }, []);
+    if (id) {
+      fetchRequisicao(); // Busca a requisição com base no ID
+    }
+  }, [id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -94,13 +108,14 @@ const CadastroCotacoes = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Adicionar a cotação no Firestore
+      // Adicionar a cotação no Firestore e vincular à requisição
       await addDoc(collection(db, "cotacoes"), {
         nomeEmpresa: form.nomeEmpresa,
         nomeFuncionario: form.nomeFuncionario,
         preco: form.preco,
         produto: form.produto,
         contato: form.contato,
+        requisicaoId: id, // Associando cotação à requisição
       });
       setSuccess(true);
       setError(false);
@@ -179,22 +194,16 @@ const CadastroCotacoes = () => {
             margin="normal"
           />
 
+          {/* Produto é preenchido automaticamente com base na requisição */}
           <TextField
-            select
             label="Produto"
             name="produto"
             value={form.produto}
-            onChange={handleChange}
             fullWidth
             required
             margin="normal"
-          >
-            {produtosDisponiveis.map((produto) => (
-              <MenuItem key={produto.id} value={produto.nomeProduto}>
-                {produto.nomeProduto}
-              </MenuItem>
-            ))}
-          </TextField>
+            disabled // Desabilitado, pois será preenchido automaticamente pela requisição
+          />
 
           <TextField
             label="Contato (Email)"

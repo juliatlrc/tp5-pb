@@ -8,6 +8,9 @@ import {
   ListItemText,
   IconButton,
   Button,
+  MenuItem,
+  Select,
+  FormControl,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty"; // Icon for "A esperar"
@@ -16,46 +19,38 @@ import AutorenewIcon from "@mui/icons-material/Autorenew"; // Icon for "Em cota�
 import {
   collection,
   query,
-  where,
   getDocs,
   deleteDoc,
   doc,
+  updateDoc,
 } from "firebase/firestore";
 import { db } from "../../firebase/config"; // Configuração do Firestore
-import { getAuth } from "firebase/auth";
 import { CSVLink } from "react-csv";
+import { useNavigate } from "react-router-dom"; // Para navegação entre telas
 
-const ListarRequisicoes = () => {
+const ListarRequisicoesAdmin = () => {
   const [requisicoes, setRequisicoes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchRequisicoes = async () => {
-      const auth = getAuth();
-      const user = auth.currentUser;
+      const q = query(collection(db, "requisicoes"));
+      const querySnapshot = await getDocs(q);
+      const requisicoesList = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
 
-      if (user) {
-        const q = query(
-          collection(db, "requisicoes"),
-          where("uidColaborador", "==", user.uid)
-        );
+      requisicoesList.sort((a, b) => {
+        if (a.data && b.data) {
+          return a.data.seconds - b.data.seconds;
+        }
+        return 0;
+      });
 
-        const querySnapshot = await getDocs(q);
-        const requisicoesList = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-
-        requisicoesList.sort((a, b) => {
-          if (a.data && b.data) {
-            return a.data.seconds - b.data.seconds;
-          }
-          return 0;
-        });
-
-        setRequisicoes(requisicoesList);
-        setLoading(false);
-      }
+      setRequisicoes(requisicoesList);
+      setLoading(false);
     };
 
     fetchRequisicoes();
@@ -72,6 +67,23 @@ const ListarRequisicoes = () => {
       } catch (err) {
         console.error("Erro ao excluir a requisição: ", err);
       }
+    }
+  };
+
+  // Função para alterar o status de uma requisição
+  const handleStatusChange = async (id, newStatus) => {
+    try {
+      const requisicaoRef = doc(db, "requisicoes", id);
+      await updateDoc(requisicaoRef, { statusPedido: newStatus });
+      setRequisicoes(
+        requisicoes.map((requisicao) =>
+          requisicao.id === id
+            ? { ...requisicao, statusPedido: newStatus }
+            : requisicao
+        )
+      );
+    } catch (err) {
+      console.error("Erro ao atualizar o status da requisição: ", err);
     }
   };
 
@@ -109,7 +121,7 @@ const ListarRequisicoes = () => {
   return (
     <Container maxWidth="md" sx={{ mt: 5 }}>
       <Typography variant="h5" align="center" gutterBottom>
-        Minhas Requisições de Compra
+        Requisições de Compra - Admin
       </Typography>
 
       {loading ? (
@@ -130,6 +142,7 @@ const ListarRequisicoes = () => {
                     key={requisicao.id}
                     secondaryAction={
                       <>
+                        {/* Botão para excluir */}
                         <IconButton
                           edge="end"
                           aria-label="delete"
@@ -137,6 +150,8 @@ const ListarRequisicoes = () => {
                         >
                           <DeleteIcon />
                         </IconButton>
+
+                        {/* Exportar CSV */}
                         <CSVLink
                           data={generateCSVData(requisicao)}
                           filename={`requisicao-${requisicao.id}.csv`}
@@ -145,6 +160,18 @@ const ListarRequisicoes = () => {
                             Exportar CSV
                           </Button>
                         </CSVLink>
+
+                        {/* Botão para criar cotação */}
+                        <Button
+                          variant="outlined"
+                          color="primary"
+                          sx={{ ml: 2 }}
+                          onClick={() =>
+                            navigate(`/criar-cotacao/${requisicao.id}`)
+                          }
+                        >
+                          Criar Cotação
+                        </Button>
                       </>
                     }
                     sx={{
@@ -156,21 +183,49 @@ const ListarRequisicoes = () => {
                     {statusStyles.icon && (
                       <Box sx={{ mr: 2 }}>{statusStyles.icon}</Box>
                     )}
+
                     <ListItemText
                       primary={`Descrição: ${
                         requisicao.descricao || "Descrição não disponível"
                       }`}
-                      secondary={`Estado: ${
-                        requisicao.estado || "Estado não disponível"
-                      } | Data: ${
-                        requisicao.data
-                          ? new Date(
-                              requisicao.data.seconds * 1000
-                            ).toLocaleDateString()
-                          : "Data não disponível"
-                      } | Status: ${
-                        requisicao.statusPedido || "Status não disponível"
-                      }`}
+                      secondary={
+                        <>
+                          {`Estado: ${
+                            requisicao.estado || "Estado não disponível"
+                          } | Data: ${
+                            requisicao.data
+                              ? new Date(
+                                  requisicao.data.seconds * 1000
+                                ).toLocaleDateString()
+                              : "Data não disponível"
+                          } | Produto: ${
+                            requisicao.nomeProduto || "Produto não disponível"
+                          } | Status: ${
+                            requisicao.statusPedido || "Status não disponível"
+                          }`}
+                          <Box sx={{ mt: 1 }}>
+                            {/* Alterar status da requisição */}
+                            <FormControl fullWidth>
+                              <Select
+                                value={requisicao.statusPedido || "A esperar"}
+                                onChange={(e) =>
+                                  handleStatusChange(
+                                    requisicao.id,
+                                    e.target.value
+                                  )
+                                }
+                                sx={{ width: "200px" }}
+                              >
+                                <MenuItem value="A esperar">A esperar</MenuItem>
+                                <MenuItem value="Em cotação">
+                                  Em cotação
+                                </MenuItem>
+                                <MenuItem value="Cotado">Cotado</MenuItem>
+                              </Select>
+                            </FormControl>
+                          </Box>
+                        </>
+                      }
                     />
                   </ListItem>
                 );
@@ -183,4 +238,4 @@ const ListarRequisicoes = () => {
   );
 };
 
-export default ListarRequisicoes;
+export default ListarRequisicoesAdmin;

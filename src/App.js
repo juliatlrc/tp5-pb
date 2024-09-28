@@ -11,7 +11,9 @@ import Login from "./features/acme/components/login";
 import PrivateRoute from "./features/routing/PrivateRoute";
 import GerenciarColaboradores from "./features/acme/components/gerenciarColaboradores";
 import CadastroColaborador from "./features/acme/components/cadastroColaborador";
-
+import NovaRequisicaoCompra from "./features/acme/components/novaRequisicaoCompra";
+import ListarRequisicoes from "./features/acme/components/listarRequisicoes";
+import ListarRequisicoesAdmin from "./features/acme/components/listarRequisicoesAdmin";
 const App = () => {
   return (
     <Router>
@@ -41,8 +43,17 @@ const App = () => {
         <Route path="/fornecedores" element={<CadastroFornecedores />} />
         <Route path="/contatos" element={<CadastroContatos />} />
         <Route path="/produtos" element={<CadastroProdutos />} />
-        <Route path="/cotacoes" element={<CadastroCotacoes />} />
+        <Route path="/criar-cotacao/:id" element={<CadastroCotacoes />} />
+        <Route
+          path="/listar-requisicoes-admin"
+          element={<ListarRequisicoesAdmin />}
+        />
         <Route path="/consultar-cotacoes" element={<ConsultaCotacoes />} />
+        <Route path="/listar-requisicoes" element={<ListarRequisicoes />} />
+        <Route
+          path="/nova-requisicao-compra"
+          element={<NovaRequisicaoCompra />}
+        />
         <Route
           path="/gerenciar-colaboradores"
           element={<GerenciarColaboradores />}

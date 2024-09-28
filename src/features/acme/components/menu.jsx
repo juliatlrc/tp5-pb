@@ -29,6 +29,7 @@ const Menu = () => {
   const [openDrawer, setOpenDrawer] = useState(false);
   const [userRole, setUserRole] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [userLoggedIn, setUserLoggedIn] = useState(false); // Verifica se o usuário está logado
   const navigate = useNavigate();
   const auth = getAuth();
 
@@ -36,6 +37,7 @@ const Menu = () => {
     const fetchUserRole = async () => {
       const user = auth.currentUser;
       if (user) {
+        setUserLoggedIn(true); // Define que o usuário está logado
         try {
           const docRef = doc(db, "colaboradores", user.uid);
           const docSnap = await getDoc(docRef);
@@ -49,6 +51,7 @@ const Menu = () => {
         }
       } else {
         // Se não estiver logado, redireciona para a página de login
+        setUserLoggedIn(false);
         navigate("/login");
       }
       setLoading(false);
@@ -98,7 +101,43 @@ const Menu = () => {
             <ListItemText primary="Home" sx={{ color: "#ffffff" }} />
           </ListItem>
 
-          {/* Apenas colaboradores podem acessar estas opções */}
+          {/* Menu para Admin */}
+          {userRole === "admin" && (
+            <>
+              <ListItem button component={Link} to="/fornecedores">
+                <ListItemText
+                  primary="Cadastro de Fornecedores"
+                  sx={{ color: "#ffffff" }}
+                />
+              </ListItem>
+              <ListItem button component={Link} to="/contatos">
+                <ListItemText
+                  primary="Cadastro de Contatos"
+                  sx={{ color: "#ffffff" }}
+                />
+              </ListItem>
+              <ListItem button component={Link} to="/produtos">
+                <ListItemText
+                  primary="Cadastro de Produtos"
+                  sx={{ color: "#ffffff" }}
+                />
+              </ListItem>
+              <ListItem button component={Link} to="/listar-requisicoes-admin">
+                <ListItemText
+                  primary="Listar Requisições (Admin)"
+                  sx={{ color: "#ffffff" }}
+                />
+              </ListItem>
+              <ListItem button component={Link} to="/consultar-cotacoes">
+                <ListItemText
+                  primary="Consulta de Cotações"
+                  sx={{ color: "#ffffff" }}
+                />
+              </ListItem>
+            </>
+          )}
+
+          {/* Menu para Colaborador */}
           {userRole === "colaborador" && (
             <>
               <ListItem button component={Link} to="/nova-requisicao-compra">
@@ -141,83 +180,134 @@ const Menu = () => {
             <CircularProgress color="inherit" />
           ) : (
             <>
-              {isMobile ? (
+              {/* Verifica se o usuário está logado antes de exibir o menu */}
+              {userLoggedIn && (
                 <>
-                  <IconButton
-                    color="inherit"
-                    edge="start"
-                    onClick={handleDrawerToggle}
-                    sx={{ mr: 2 }}
-                  >
-                    <MenuIcon />
-                  </IconButton>
-                  {mobileMenu}
-                </>
-              ) : (
-                <Box sx={{ display: "flex", alignItems: "center" }}>
-                  <Button
-                    color="inherit"
-                    onMouseEnter={handleMenuOpen}
-                    sx={{
-                      fontSize: "1rem",
-                      padding: "10px 20px",
-                      transition: "background-color 0.3s ease",
-                      "&:hover": {
-                        backgroundColor: "#ff6f00",
-                        color: "#ffffff",
-                      },
-                    }}
-                  >
-                    Menu
-                  </Button>
-
-                  {/* Dropdown Menu */}
-                  <MuiMenu
-                    anchorEl={menuAnchorEl}
-                    open={Boolean(menuAnchorEl)}
-                    onClose={handleMenuClose}
-                    onMouseLeave={handleMenuClose}
-                    MenuListProps={{ onMouseLeave: handleMenuClose }}
-                    PaperProps={{
-                      sx: {
-                        mt: 2,
-                        backgroundColor: "#004d40",
-                        color: "#ffffff",
-                        "& .MuiMenuItem-root": {
+                  {isMobile ? (
+                    <>
+                      <IconButton
+                        color="inherit"
+                        edge="start"
+                        onClick={handleDrawerToggle}
+                        sx={{ mr: 2 }}
+                      >
+                        <MenuIcon />
+                      </IconButton>
+                      {mobileMenu}
+                    </>
+                  ) : (
+                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                      <Button
+                        color="inherit"
+                        onMouseEnter={handleMenuOpen}
+                        sx={{
+                          fontSize: "1rem",
+                          padding: "10px 20px",
+                          transition: "background-color 0.3s ease",
                           "&:hover": {
                             backgroundColor: "#ff6f00",
                             color: "#ffffff",
                           },
-                        },
-                      },
-                    }}
-                  >
-                    <MenuItem component={Link} to="/" onClick={handleMenuClose}>
-                      Home
-                    </MenuItem>
+                        }}
+                      >
+                        Menu
+                      </Button>
 
-                    {userRole === "colaborador" && (
-                      <>
+                      {/* Dropdown Menu */}
+                      <MuiMenu
+                        anchorEl={menuAnchorEl}
+                        open={Boolean(menuAnchorEl)}
+                        onClose={handleMenuClose}
+                        onMouseLeave={handleMenuClose}
+                        MenuListProps={{ onMouseLeave: handleMenuClose }}
+                        PaperProps={{
+                          sx: {
+                            mt: 2,
+                            backgroundColor: "#004d40",
+                            color: "#ffffff",
+                            "& .MuiMenuItem-root": {
+                              "&:hover": {
+                                backgroundColor: "#ff6f00",
+                                color: "#ffffff",
+                              },
+                            },
+                          },
+                        }}
+                      >
                         <MenuItem
                           component={Link}
-                          to="/nova-requisicao-compra"
+                          to="/"
                           onClick={handleMenuClose}
                         >
-                          Nova Requisição de Compra
+                          Home
                         </MenuItem>
-                        <MenuItem
-                          component={Link}
-                          to="/listar-requisicoes"
-                          onClick={handleMenuClose}
-                        >
-                          Listar Requisições
-                        </MenuItem>
-                      </>
-                    )}
 
-                    <MenuItem onClick={handleLogout}>Logout</MenuItem>
-                  </MuiMenu>
-                </Box>
+                        {/* Menu para Admin */}
+                        {userRole === "admin" && (
+                          <>
+                            <MenuItem
+                              component={Link}
+                              to="/fornecedores"
+                              onClick={handleMenuClose}
+                            >
+                              Cadastro de Fornecedores
+                            </MenuItem>
+                            <MenuItem
+                              component={Link}
+                              to="/contatos"
+                              onClick={handleMenuClose}
+                            >
+                              Cadastro de Contatos
+                            </MenuItem>
+                            <MenuItem
+                              component={Link}
+                              to="/produtos"
+                              onClick={handleMenuClose}
+                            >
+                              Cadastro de Produtos
+                            </MenuItem>
+                            <MenuItem
+                              component={Link}
+                              to="/listar-requisicoes-admin"
+                              onClick={handleMenuClose}
+                            >
+                              Listar Requisições (Admin)
+                            </MenuItem>
+                            <MenuItem
+                              component={Link}
+                              to="/consultar-cotacoes"
+                              onClick={handleMenuClose}
+                            >
+                              Consulta de Cotações
+                            </MenuItem>
+                          </>
+                        )}
+
+                        {/* Menu para Colaborador */}
+                        {userRole === "colaborador" && (
+                          <>
+                            <MenuItem
+                              component={Link}
+                              to="/nova-requisicao-compra"
+                              onClick={handleMenuClose}
+                            >
+                              Nova Requisição de Compra
+                            </MenuItem>
+                            <MenuItem
+                              component={Link}
+                              to="/listar-requisicoes"
+                              onClick={handleMenuClose}
+                            >
+                              Listar Requisições
+                            </MenuItem>
+                          </>
+                        )}
+
+                        <MenuItem onClick={handleLogout}>Logout</MenuItem>
+                      </MuiMenu>
+                    </Box>
+                  )}
+                </>
               )}
             </>
           )}
