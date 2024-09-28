@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   TextField,
   Button,
@@ -46,7 +46,7 @@ const CadastroCotacoes = () => {
   const [error, setError] = useState(false);
 
   // Função para buscar a requisição específica pelo ID
-  const fetchRequisicao = async () => {
+  const fetchRequisicao = useCallback(async () => {
     try {
       const docRef = doc(db, "requisicoes", id); // Busca a requisição pelo ID da URL
       const docSnap = await getDoc(docRef);
@@ -64,10 +64,10 @@ const CadastroCotacoes = () => {
       console.error("Erro ao buscar requisição: ", error);
       setError(true);
     }
-  };
+  }, [id]); // Agora 'id' é a dependência de 'fetchRequisicao'
 
   // Função para buscar fornecedores do Firestore
-  const fetchContatos = async () => {
+  const fetchContatos = useCallback(async () => {
     const contatosCollection = collection(db, "contatos");
     const contatosSnapshot = await getDocs(contatosCollection);
     const contatosList = contatosSnapshot.docs.map((doc) => ({
@@ -75,14 +75,14 @@ const CadastroCotacoes = () => {
       ...doc.data(),
     }));
     setContatosDisponiveis(contatosList);
-  };
+  }, []); // 'fetchContatos' é memoizada e não tem dependências
 
   useEffect(() => {
     fetchContatos();
     if (id) {
       fetchRequisicao(); // Busca a requisição com base no ID
     }
-  }, [id]);
+  }, [fetchContatos, fetchRequisicao]); // Adicionando dependências corretas
 
   const handleChange = (e) => {
     const { name, value } = e.target;
