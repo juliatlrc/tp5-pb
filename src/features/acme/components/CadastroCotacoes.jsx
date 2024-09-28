@@ -82,7 +82,7 @@ const CadastroCotacoes = () => {
     if (id) {
       fetchRequisicao(); // Busca a requisição com base no ID
     }
-  }, [fetchContatos, fetchRequisicao]); // Adicionando dependências corretas
+  }, [fetchContatos, fetchRequisicao, id]); // Adicionando dependências corretas
 
   const handleChange = (e) => {
     const { name, value } = e.target;
