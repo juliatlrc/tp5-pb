@@ -4,7 +4,6 @@
 // expect(element).toHaveTextContent(/react/i)
 // Adicione isso no setupTests.js ou no topo do arquivo de teste
 import { TextEncoder, TextDecoder } from "util";
-import "web-streams-polyfill/ponyfill";
 
 // learn more: https://github.com/testing-library/jest-dom
 import "@testing-library/jest-dom";
