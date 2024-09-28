@@ -1,10 +1,10 @@
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect } from "react";
 import {
   TextField,
   Button,
   Container,
   Typography,
-  Box,
   Alert,
   MenuItem,
 } from "@mui/material";
